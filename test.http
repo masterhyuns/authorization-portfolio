@@ -1,0 +1,62 @@
+#http://localhost:8080/authorize?client_id=test-client&redirect_uri=http://localhost:3000/callback&scope=read&state=abc123
+
+POST http://localhost:8080/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=authorization_code&
+code=7dffd0f6-c470-4187-88fb-4366c46bff57&
+client_id=test-client&
+redirect_uri=http://localhost:3000/callback
+
+
+###
+
+# curl -X POST http://localhost:8080/token
+#  -H "Content-Type: application/x-www-form-urlencoded"
+#  -d "grant_type=authorization_code"
+#  -d "code=XYZ"
+#  -d "client_id=test-client"
+#  -d "redirect_uri=http://localhost:3000/callback"
+# curl -X GET http://localhost:8080/me
+#  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+GET http://localhost:8080/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0LWNsaWVudCIsImlhdCI6MTc0NTIxMTcxMCwiZXhwIjoxNzQ1MjEyMzEwfQ.J7pyQ9EkCMypo2IkJosZvnts0-bbjJqmOPkj33YkpA4
+
+###
+
+
+###
+
+#{
+#  "access_token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0LWNsaWVudCIsImlhdCI6MTc0NTIxMTcxMCwiZXhwIjoxNzQ1MjEyMzEwfQ.J7pyQ9EkCMypo2IkJosZvnts0-bbjJqmOPkj33YkpA4",
+#  "refresh_token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0LWNsaWVudCIsImlhdCI6MTc0NTIxMTcxMCwiZXhwIjoxNzQ3ODAzNzEwfQ.3HlRXalA7Qt_lSu4COAl8KUSeRlAdK9vCsGjTWE5XXo",
+#  "token_type": "bearer",
+#  "expires_in": 600
+#}
+
+# curl -X POST http://localhost:8080/token
+#  -H "Content-Type: application/x-www-form-urlencoded"
+#  -d "grant_type=refresh_token"
+#  -d "refresh_token=REFRESH_TOKEN_HERE"
+#  -d "client_id=test-client"
+POST http://localhost:8080/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type = refresh_token &
+refresh_token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0LWNsaWVudCIsImlhdCI6MTc0NTIxMTcxMCwiZXhwIjoxNzQ3ODAzNzEwfQ.3HlRXalA7Qt_lSu4COAl8KUSeRlAdK9vCsGjTWE5XXo&
+client_id = test-client
+
+###
+
+
+
+# curl -X POST http://localhost:8080/revoke
+#  -H "Content-Type: application/x-www-form-urlencoded"
+#  -d "token=ACCESS_OR_REFRESH_TOKEN_HERE"
+POST http://localhost:8080/token/revoke
+Content-Type: application/x-www-form-urlencoded
+
+token = eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0LWNsaWVudCIsImlhdCI6MTc0NTIxMTcxMCwiZXhwIjoxNzQ3ODAzNzEwfQ.3HlRXalA7Qt_lSu4COAl8KUSeRlAdK9vCsGjTWE5XXo
+
+###
+
