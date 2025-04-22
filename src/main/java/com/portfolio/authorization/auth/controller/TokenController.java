@@ -2,13 +2,25 @@ package com.portfolio.authorization.auth.controller;
 
 import com.portfolio.authorization.auth.dto.TokenResponse;
 import com.portfolio.authorization.auth.service.TokenService;
+import com.portfolio.authorization.common.exception.CustomException;
+import com.portfolio.authorization.common.response.ApiResponse;
+import com.portfolio.authorization.common.response.ApiResponseCode;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/token")
 @RequiredArgsConstructor
@@ -17,7 +29,7 @@ public class TokenController {
     private final TokenService tokenService;
 
     @PostMapping
-    public ResponseEntity<?> issueToken(
+    public ResponseEntity<ApiResponse<TokenResponse>> issueToken(
             @RequestParam("grant_type") String grantType,
             @RequestParam(value = "code", required = false) String code,
             @RequestParam(value = "refresh_token", required = false) String refreshToken,
@@ -25,29 +37,34 @@ public class TokenController {
             @RequestParam(value = "redirect_uri", required = false) String redirectUri
     ) {
         if ("authorization_code".equals(grantType)) {
-            if (code == null || redirectUri == null) {
-                return ResponseEntity.badRequest().body("Missing required parameters for authorization_code grant");
+            if(code == null){
+                throw new CustomException(ApiResponseCode.INVALID_CODE);
             }
+            if(redirectUri == null){
+                throw new CustomException(ApiResponseCode.INVALID_REDIRECT_URL);
+            }
+
             TokenResponse token = tokenService.issueAccessToken(code, clientId, redirectUri);
-            return ResponseEntity.ok(token);
+            return ApiResponse.OK(token);
         }
 
         if ("refresh_token".equals(grantType)) {
             if (refreshToken == null) {
-                return ResponseEntity.badRequest().body("Missing refresh_token for refresh_token grant");
+                throw new CustomException(ApiResponseCode.INVALID_TOKEN);
             }
             TokenResponse token = tokenService.refreshAccessToken(refreshToken, clientId);
-            return ResponseEntity.ok(token);
+            return ApiResponse.OK(token);
         }
 
-        return ResponseEntity.badRequest().body("Unsupported grant_type: " + grantType);
+        throw new CustomException(ApiResponseCode.INVALID_GRANT_TYPE);
     }
 
     @PostMapping("/revoke")
-    public ResponseEntity<?> revokeToken(
-            @RequestParam("token") String token
+    public ResponseEntity<ApiResponse<Void>> revokeToken(
+            @RequestParam("token") String token,
+            HttpServletRequest request, HttpServletResponse response
     ) {
-        boolean revoked = tokenService.revoke(token);
-        return revoked ? ResponseEntity.noContent().build() : ResponseEntity.badRequest().body("Token not found");
+        tokenService.revoke(token);
+        return ApiResponse.OK();
     }
 }
